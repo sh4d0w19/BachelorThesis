@@ -2,59 +2,98 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Group Sorter</title>
+  <title>Liam Bachelor Thesis</title>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 2rem;
+      font-size: 20px;
+      text-align: center;
+      margin-top: 100px;
+      margin-left: 300px;
+      margin-right: 300px;
     }
+
     button {
-      padding: 10px 16px;
+      padding: 12px 20px;
       font-size: 16px;
       cursor: pointer;
+      margin-top: 20px;
     }
   </style>
 </head>
+
 <body>
 
-  <button id="assignBtn">Assign me to a group</button>
+  <p id="before-text">
+    Hi, my name is Liam! I am currently writing my bachelor thesis in the study course
+    Animation & Game at the University of Applied Sciences Darmstadt.
+    Thank you for helping out!
+  </p>
+
+  <p>
+    The total gameplay time is around 5–7 minutes, followed by a questionnaire.
+    Click the button to start testing!
+  </p>
+
+  <button onclick="assignGroup()">Get me testing!</button>
 
   <div id="result" style="margin-top: 20px;"></div>
 
   <script>
-    const assignBtn = document.getElementById("assignBtn");
-    const resultDiv = document.getElementById("result");
+    const supabaseUrl = "https://nxpbqfrfyhsreyjnzwhn.supabase.co";
+    const supabaseKey = "PASTE_YOUR_REAL_ANON_KEY_HERE";
 
-    assignBtn.addEventListener("click", () => {
-      // Randomly assign group
-      const group = Math.random() < 0.5 ? "A" : "B";
+    const supabase = window.supabase.createClient(
+      supabaseUrl,
+      supabaseKey
+    );
 
-      // Clear previous content
-      resultDiv.innerHTML = "";
+    async function assignGroup() {
 
-      // Create download button
-      const downloadBtn = document.createElement("a");
-      downloadBtn.textContent = `Download for Group ${group}`;
-      downloadBtn.style.display = "inline-block";
-      downloadBtn.style.marginTop = "10px";
-      downloadBtn.style.padding = "10px 16px";
-      downloadBtn.style.background = "#007bff";
-      downloadBtn.style.color = "white";
-      downloadBtn.style.textDecoration = "none";
-      downloadBtn.style.borderRadius = "4px";
-
-      // Assign download link
-      if (group === "A") {
-        downloadBtn.href = "files/groupA.zip";
-      } else {
-        downloadBtn.href = "files/groupB.zip";
+      // Prevent duplicate participation
+      const existingGroup = localStorage.getItem("group");
+      if (existingGroup) {
+        document.getElementById("result").innerHTML =
+          `<p>You were already assigned to <strong>Group ${existingGroup}</strong>.</p>`;
+        return;
       }
 
-      downloadBtn.download = "";
+      // Get current counts
+      const { data, error } = await supabase
+        .from("participants")
+        .select("group_assignment");
 
-      resultDiv.innerHTML = `<p>You are in <strong>Group ${group}</strong></p>`;
-      resultDiv.appendChild(downloadBtn);
-    });
+      if (error) {
+        alert("Error fetching group counts");
+        console.error(error);
+        return;
+      }
+
+      const countA = data.filter(p => p.group_assignment === "A").length;
+      const countB = data.filter(p => p.group_assignment === "B").length;
+
+      // Assign to smaller group
+      const group = countA <= countB ? "A" : "B";
+
+      // Insert participant
+      const { error: insertError } = await supabase
+        .from("participants")
+        .insert({ group_assignment: group });
+
+      if (insertError) {
+        alert("Error saving assignment");
+        console.error(insertError);
+        return;
+      }
+
+      localStorage.setItem("group", group);
+
+      document.getElementById("result").innerHTML =
+        `<p>You have been assigned to <strong>Group ${group}</strong>.</p>`;
+    }
   </script>
 
 </body>
