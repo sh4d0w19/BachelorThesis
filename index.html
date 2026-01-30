@@ -139,17 +139,17 @@
       const resultDiv = document.getElementById("result");
 
       // Show group assignment text
-      resultDiv.innerHTML = `<p>You have been assigned to <strong>Group ${group}</strong>.</p>`;
+      resultDiv.innerHTML = `<p>Have fun playing!/strong>.</p>`;
 
       // Create download button
       const downloadBtn = document.createElement("a");
       downloadBtn.classList.add("downloadBtn");
-      downloadBtn.textContent = `Download for Group ${group}`;
+      downloadBtn.textContent = `Download`;
       downloadBtn.download = "";
 
       // Set group-specific file paths (must exist in files folder)
       downloadBtn.href = group === "A"
-        ? "files/BachelorThesis_LiamHermann1.7z"
+        ? "files/BachelorThesisLiamHermann_1.7z"
         : "files/BachelorThesis_LiamHermann_1.7z";
 
       resultDiv.appendChild(downloadBtn);
