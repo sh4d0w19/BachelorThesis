@@ -94,7 +94,7 @@
     // Supabase setup
     const supabaseUrl = "https://nxpbqfrfyhsreyjnzwhn.supabase.co";
     const supabaseKey = "sb_publishable_6ZjnRYTbOSHeGmj1q5ffnA_GwGnU5jA";
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    let supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     // Assign group when button clicked
     startBtn.addEventListener("click", assignGroup);
