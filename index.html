@@ -24,6 +24,11 @@
       margin-top: 20px;
     }
 
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     #consentLabel {
       display: block;
       margin-bottom: 20px;
@@ -34,14 +39,15 @@
       display: inline-block;
       margin-top: 20px;
       padding: 12px 20px;
-      background-color: #007bff;
+      background-color: #28a745; /* green */
       color: white;
       text-decoration: none;
       border-radius: 5px;
+      font-weight: bold;
     }
 
     a.downloadBtn:hover {
-      background-color: #0056b3;
+      background-color: #218838;
     }
   </style>
 </head>
@@ -71,78 +77,85 @@
   <div id="result" style="margin-top: 20px;"></div>
 
   <script>
-    // Enable button only if consent is checked
-    const checkbox = document.getElementById("consentCheckbox");
-    const startBtn = document.getElementById("startBtn");
+    document.addEventListener("DOMContentLoaded", () => {
+      const checkbox = document.getElementById("consentCheckbox");
+      const startBtn = document.getElementById("startBtn");
 
-    checkbox.addEventListener("change", () => {
+      // Enable/disable button based on checkbox
+      checkbox.addEventListener("change", () => {
+        startBtn.disabled = !checkbox.checked;
+      });
+
+      // Initialize button state
       startBtn.disabled = !checkbox.checked;
+
+      // Supabase setup
+      const supabaseUrl = "https://nxpbqfrfyhsreyjnzwhn.supabase.co";
+      const supabaseKey = "PASTE_YOUR_REAL_ANON_KEY_HERE"; // replace with your anon key
+      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+      // Assign group when button clicked
+      startBtn.addEventListener("click", assignGroup);
+
+      async function assignGroup() {
+        // Prevent double participation
+        const existingGroup = localStorage.getItem("group");
+        if (existingGroup) {
+          showDownloadButton(existingGroup);
+          return;
+        }
+
+        // Get current group counts
+        const { data, error } = await supabase.from("participants").select("group_assignment");
+        if (error) {
+          alert("Error fetching group counts");
+          console.error(error);
+          return;
+        }
+
+        const countA = data.filter(p => p.group_assignment === "A").length;
+        const countB = data.filter(p => p.group_assignment === "B").length;
+
+        // Assign to smaller group
+        const group = countA <= countB ? "A" : "B";
+
+        // Insert participant
+        const { error: insertError } = await supabase.from("participants").insert({ group_assignment: group });
+        if (insertError) {
+          alert("Error saving assignment");
+          console.error(insertError);
+          return;
+        }
+
+        // Save locally
+        localStorage.setItem("group", group);
+
+        // Show result & download button
+        showDownloadButton(group);
+      }
+
+      function showDownloadButton(group) {
+        const resultDiv = document.getElementById("result");
+        // Show assigned group
+        resultDiv.innerHTML = `<p>You have been assigned to <strong>Group ${group}</strong>.</p>`;
+
+        // Create download button
+        const downloadBtn = document.createElement("a");
+        downloadBtn.classList.add("downloadBtn");
+        downloadBtn.textContent = `Download for Group ${group}`;
+
+        // Set group-specific file (make sure these exist in your 'files' folder)
+        if (group === "A") {
+          downloadBtn.href = "files/BachelorThesis_LiamHermann1.7z";
+        } else {
+          downloadBtn.href = "files/BachelorThesis_LiamHermann_1.7z";
+        }
+
+        downloadBtn.download = ""; // triggers download
+
+        resultDiv.appendChild(downloadBtn);
+      }
     });
-
-    // Supabase setup
-    const supabaseUrl = "https://nxpbqfrfyhsreyjnzwhn.supabase.co";
-    const supabaseKey = "sb_publishable_6ZjnRYTbOSHeGmj1q5ffnA_GwGnU5jA";
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-    startBtn.addEventListener("click", assignGroup);
-
-    async function assignGroup() {
-      // Prevent double participation
-      const existingGroup = localStorage.getItem("group");
-      if (existingGroup) {
-        showDownloadButton(existingGroup);
-        return;
-      }
-
-      // Get current group counts
-      const { data, error } = await supabase.from("participants").select("group_assignment");
-      if (error) {
-        alert("Error fetching group counts");
-        console.error(error);
-        return;
-      }
-
-      const countA = data.filter(p => p.group_assignment === "A").length;
-      const countB = data.filter(p => p.group_assignment === "B").length;
-
-      // Assign to smaller group
-      const group = countA <= countB ? "A" : "B";
-
-      // Insert participant
-      const { error: insertError } = await supabase.from("participants").insert({ group_assignment: group });
-      if (insertError) {
-        alert("Error saving assignment");
-        console.error(insertError);
-        return;
-      }
-
-      // Save locally
-      localStorage.setItem("group", group);
-
-      // Show result & download
-      showDownloadButton(group);
-    }
-
-    function showDownloadButton(group) {
-      const resultDiv = document.getElementById("result");
-      //resultDiv.innerHTML = `<p>You have been assigned to <strong>Group ${group}</strong>.</p>`;
-
-      // Create download button
-      const downloadBtn = document.createElement("a");
-      downloadBtn.classList.add("downloadBtn");
-      downloadBtn.textContent = `Download`;
-
-      // Set group-specific file
-      if (group === "A") {
-        downloadBtn.href = "files/BachelorThesis_LiamHermann1.7z";
-      } else {
-        downloadBtn.href = "files/BachelorThesis_LiamHermann_1.7z";
-      }
-
-      downloadBtn.download = ""; // triggers download
-
-      resultDiv.appendChild(downloadBtn);
-    }
   </script>
 
 </body>
