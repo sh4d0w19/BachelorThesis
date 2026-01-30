@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Group Sorter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <button id="assignBtn">Assign me to a group</button>
+
+  <div id="result" style="margin-top: 20px;"></div>
+
+  <script>
+    const assignBtn = document.getElementById("assignBtn");
+    const resultDiv = document.getElementById("result");
+
+    assignBtn.addEventListener("click", () => {
+      // Randomly assign group
+      const group = Math.random() < 0.5 ? "A" : "B";
+
+      // Clear previous content
+      resultDiv.innerHTML = "";
+
+      // Create download button
+      const downloadBtn = document.createElement("a");
+      downloadBtn.textContent = `Download for Group ${group}`;
+      downloadBtn.style.display = "inline-block";
+      downloadBtn.style.marginTop = "10px";
+      downloadBtn.style.padding = "10px 16px";
+      downloadBtn.style.background = "#007bff";
+      downloadBtn.style.color = "white";
+      downloadBtn.style.textDecoration = "none";
+      downloadBtn.style.borderRadius = "4px";
+
+      // Assign download link
+      if (group === "A") {
+        downloadBtn.href = "files/groupA.zip";
+      } else {
+        downloadBtn.href = "files/groupB.zip";
+      }
+
+      downloadBtn.download = "";
+
+      resultDiv.innerHTML = `<p>You are in <strong>Group ${group}</strong></p>`;
+      resultDiv.appendChild(downloadBtn);
+    });
+  </script>
+
+</body>
+</html>
