@@ -130,13 +130,13 @@
       // Create download button
       const downloadBtn = document.createElement("a");
       downloadBtn.classList.add("downloadBtn");
-      //downloadBtn.textContent = `Download for Group ${group}`;
+      downloadBtn.textContent = `Download`;
 
       // Set group-specific file
       if (group === "A") {
-        downloadBtn.href = "files/BachelorThesis_LiamHermann1.zip";
+        downloadBtn.href = "files/BachelorThesis_LiamHermann1.7z";
       } else {
-        downloadBtn.href = "files/BachelorThesis_LiamHermann_1.zip";
+        downloadBtn.href = "files/BachelorThesis_LiamHermann_1.7z";
       }
 
       downloadBtn.download = ""; // triggers download
