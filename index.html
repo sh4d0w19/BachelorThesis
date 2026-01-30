@@ -38,7 +38,12 @@
     Click the button to start testing!
   </p>
 
-  <button onclick="assignGroup()">Get me testing!</button>
+  <p>
+  <input type="checkbox" id="consentCheckbox">
+  I consent to participate in this study and understand my data will be used anonymously for research purposes.
+</p>
+
+  <button onclick="startTest()">Get me testing!</button>
 
   <div id="result" style="margin-top: 20px;"></div>
 
@@ -50,6 +55,19 @@
       supabaseUrl,
       supabaseKey
     );
+
+    function startTest() {
+    const consent = document.getElementById("consentCheckbox").checked;
+
+        if (!consent) {
+            alert("You must give consent to participate before starting.");
+            return;
+        }
+
+        // If consent is given, proceed with group assignment
+        assignGroup();
+    }
+
 
     async function assignGroup() {
 
