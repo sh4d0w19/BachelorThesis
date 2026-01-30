@@ -66,8 +66,8 @@
   </p>
 
   <!-- Consent -->
-  <label id="consentLabel">
-    <input type="checkbox" id="consentCheckbox">
+  <input type="checkbox" id="consentCheckbox">
+  <label id="consentLabel" for = "consentCheckbox">
     I consent to participate in this study and understand my data will be used anonymously for research purposes.
   </label>
 
@@ -87,7 +87,8 @@
 
     // Enable button when checkbox is checked
     checkbox.addEventListener("change", () => {
-      startBtn.disabled = !checkbox.checked;
+    console.log("Checkbox checked?", checkbox.checked);  
+    startBtn.disabled = !checkbox.checked;
     });
 
     // Supabase setup
