@@ -39,7 +39,7 @@
       display: inline-block;
       margin-top: 20px;
       padding: 12px 20px;
-      background-color: #28a745;
+      background-color: #28a745; /*green*/
       color: white;
       text-decoration: none;
       border-radius: 5px;
@@ -82,13 +82,13 @@
     const checkbox = document.getElementById("consentCheckbox");
     const startBtn = document.getElementById("startBtn");
 
+    // Initial state
+    //startBtn.disabled = !checkbox.checked;
+
     // Enable button when checkbox is checked
     checkbox.addEventListener("change", () => {
       startBtn.disabled = !checkbox.checked;
     });
-
-    // Initial state
-    startBtn.disabled = !checkbox.checked;
 
     // Supabase setup
     const supabaseUrl = "https://nxpbqfrfyhsreyjnzwhn.supabase.co";
