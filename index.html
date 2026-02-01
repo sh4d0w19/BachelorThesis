@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Liam Bachelor Thesis</title>
 
-  <!-- Supabase JS -->
+  <!-- Supabase JS v2 -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <style>
@@ -12,9 +12,7 @@
       font-family: Arial, sans-serif;
       font-size: 20px;
       text-align: center;
-      margin-top: 50px;
-      margin-left: 200px;
-      margin-right: 200px;
+      margin: 50px 200px;
     }
 
     button {
@@ -39,7 +37,7 @@
       display: inline-block;
       margin-top: 20px;
       padding: 12px 20px;
-      background-color: #28a745; /*green*/
+      background-color: #28a745;
       color: white;
       text-decoration: none;
       border-radius: 5px;
@@ -54,7 +52,7 @@
 
 <body>
 
-  <p id="before-text">
+  <p>
     Hi, my name is Liam! I am currently writing my bachelor thesis in the study course
     Animation & Game at the University of Applied Sciences Darmstadt.
     Thank you for helping out!
@@ -67,7 +65,7 @@
 
   <!-- Consent -->
   <input type="checkbox" id="consentCheckbox">
-  <label id="consentLabel" for = "consentCheckbox">
+  <label id="consentLabel" for="consentCheckbox">
     I consent to participate in this study and understand my data will be used anonymously for research purposes.
   </label>
 
@@ -76,49 +74,61 @@
 
   <div id="result" style="margin-top: 20px;"></div>
 
-  <!-- Script at the end so DOM elements exist -->
   <script>
-    // Grab elements
-    const checkbox = document.getElementById("consentCheckbox");
+    /**********************
+     * DOM ELEMENTS
+     **********************/
+    const consentCheckbox = document.getElementById("consentCheckbox");
     const startBtn = document.getElementById("startBtn");
+    const resultDiv = document.getElementById("result");
 
-    // Initial state
-    //startBtn.disabled = !checkbox.checked;
-
-    // Enable button when checkbox is checked
-    checkbox.addEventListener("change", () => {
-    console.log("Checkbox checked?", checkbox.checked);  
-    startBtn.disabled = !checkbox.checked;
+    /**********************
+     * CONSENT HANDLING
+     **********************/
+    consentCheckbox.addEventListener("change", () => {
+      startBtn.disabled = !consentCheckbox.checked;
     });
 
-    // Supabase setup
+    /**********************
+     * SUPABASE SETUP
+     **********************/
+    const SUPABASE_URL = "https://nxpbqfrfyhsreyjnzwhn.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_6ZjnRYTbOSHeGmj1q5ffnA_GwGnU5jA";
 
-    // Check if supabase already exists
-        const supabaseUrl = "https://nxpbqfrfyhsreyjnzwhn.supabase.co";
-        const supabaseKey = "sb_publishable_6ZjnRYTbOSHeGmj1q5ffnA_GwGnU5jA"; // replace with your anon key
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-        console.log("Supabase client:", supabase);
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
 
-
-    // Assign group when button clicked
+    /**********************
+     * START BUTTON LOGIC
+     **********************/
     startBtn.addEventListener("click", assignGroup);
 
     async function assignGroup() {
-      // Prevent double participation
+      // Prevent double clicks
+      startBtn.disabled = true;
+
+      // Prevent multiple participations on same device
       const existingGroup = localStorage.getItem("group");
       if (existingGroup) {
         showDownloadButton(existingGroup);
         return;
       }
 
-      // Get current group counts
-      const { data, error } = await supabase.from("participants").select("group_assignment");
+      // Fetch group assignments
+      const { data, error } = await supabaseClient
+        .from("participants")
+        .select("group_assignment");
+
       if (error) {
-        alert("Error fetching group counts");
+        alert("Error fetching group data.");
         console.error(error);
+        startBtn.disabled = false;
         return;
       }
 
+      // Count groups
       const countA = data.filter(p => p.group_assignment === "A").length;
       const countB = data.filter(p => p.group_assignment === "B").length;
 
@@ -126,36 +136,39 @@
       const group = countA <= countB ? "A" : "B";
 
       // Insert participant
-      const { error: insertError } = await supabase.from("participants").insert({ group_assignment: group });
+      const { error: insertError } = await supabaseClient
+        .from("participants")
+        .insert({ group_assignment: group });
+
       if (insertError) {
-        alert("Error saving assignment");
+        alert("Error saving your assignment.");
         console.error(insertError);
+        startBtn.disabled = false;
         return;
       }
 
-      // Save locally
+      // Store locally
       localStorage.setItem("group", group);
 
-      // Show result & download button
+      // Show download
       showDownloadButton(group);
     }
 
+    /**********************
+     * DOWNLOAD BUTTON
+     **********************/
     function showDownloadButton(group) {
-      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "<p>Have fun playing!</p>";
 
-      // Show group assignment text
-      resultDiv.innerHTML = `<p>Have fun playing!</p>`;
-
-      // Create download button
       const downloadBtn = document.createElement("a");
-      downloadBtn.classList.add("downloadBtn");
-      downloadBtn.textContent = `Download`;
+      downloadBtn.className = "downloadBtn";
+      downloadBtn.textContent = "Download";
       downloadBtn.download = "";
 
-      // Set group-specific file paths (must exist in files folder)
-      downloadBtn.href = group === "A"
-        ? "files/BachelorThesisLiamHermann_1.7z"
-        : "files/BachelorThesis_LiamHermann_1.7z";
+      downloadBtn.href =
+        group === "A"
+          ? "files/BachelorThesisLiamHermann_1.7z"
+          : "files/BachelorThesis_LiamHermann_1.7z";
 
       resultDiv.appendChild(downloadBtn);
     }
