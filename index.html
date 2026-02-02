@@ -1,178 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Liam Bachelor Thesis</title>
+    <meta charset="UTF-8">
+    <title>Liam Bachelor Thesis</title>
 
-  <!-- Supabase JS v2 -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- Supabase JS v2 -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      font-size: 20px;
-      text-align: center;
-      margin: 50px 200px;
-    }
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            text-align: center;
+            margin: 50px 200px;
+        }
 
-    button {
-      padding: 12px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 20px;
-    }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
 
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+            button:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
 
-    #consentLabel {
-      display: block;
-      margin-bottom: 20px;
-      font-size: 16px;
-    }
+        #consentLabel {
+            display: block;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
 
-    a.downloadBtn {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 12px 20px;
-      background-color: #28a745;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
-    }
+        a.downloadBtn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
 
-    a.downloadBtn:hover {
-      background-color: #218838;
-    }
-  </style>
+            a.downloadBtn:hover {
+                background-color: #218838;
+            }
+    </style>
 </head>
 
-<body>
+<body onLoad="Start();">
 
-  <p>
-    Hi, my name is Liam! I am currently writing my bachelor thesis in the study course
-    Animation & Game at the University of Applied Sciences Darmstadt.
-    Thank you for helping out!
-  </p>
+    <h1>Bachelor Thesis Evaluation</h1>
 
-  <p>
-    The total gameplay time is around 5 to 7 minutes, followed by a questionnaire.
-    Please give consent and click the button to start testing!
-  </p>
+    <p>
+        Hi, my name is Liam! I am currently writing my bachelor thesis in the study course
+        Animation & Game at the <a href="https://h-da.de/">University of Applied Sciences Darmstadt</a>.
+        Thank you for helping out!
+    </p>
 
-  <!-- Consent -->
-  <input type="checkbox" id="consentCheckbox">
-  <label id="consentLabel" for="consentCheckbox">
-    I consent to participate in this study and understand my data will be used anonymously for research purposes.
-  </label>
+    <p>
+        The total gameplay time is around 5 to 7 minutes, followed by a questionnaire.
+        Please give consent and click the button to start testing!
+    </p>
 
-  <!-- Start Button -->
-  <button id="startBtn" disabled>Get me testing!</button>
+    <!-- Consent -->
+    <input type="checkbox" id="consentCheckbox">
+    <label id="consentLabel" for="consentCheckbox">
+        I consent to participate in this study and understand my data will be used anonymously for research purposes.
+    </label>
 
-  <div id="result" style="margin-top: 20px;"></div>
+    <!-- Start Button -->
+    <button id="startBtn" disabled>Get me testing!</button>
 
-  <script>
-    /**********************
-     * DOM ELEMENTS
-     **********************/
-    const consentCheckbox = document.getElementById("consentCheckbox");
-    const startBtn = document.getElementById("startBtn");
-    const resultDiv = document.getElementById("result");
+    <div id="result" style="margin-top: 20px;"></div>
 
-    /**********************
-     * CONSENT HANDLING
-     **********************/
-    consentCheckbox.addEventListener("change", () => {
-      startBtn.disabled = !consentCheckbox.checked;
-    });
+    <script>
+        /**********************
+         * DOM ELEMENTS
+         **********************/
+        const consentCheckbox = document.getElementById("consentCheckbox");
+        const startBtn = document.getElementById("startBtn");
+        const resultDiv = document.getElementById("result");
 
-    /**********************
-     * SUPABASE SETUP
-     **********************/
-    const SUPABASE_URL = "https://nxpbqfrfyhsreyjnzwhn.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_6ZjnRYTbOSHeGmj1q5ffnA_GwGnU5jA";
+        function Start() {
+            startBtn.disabled = !consentCheckbox.checked;
+        }
 
-    const supabaseClient = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+        /**********************
+         * CONSENT HANDLING
+         **********************/
+        consentCheckbox.addEventListener("change", () => {
+            startBtn.disabled = !consentCheckbox.checked;
+        });
 
-    /**********************
-     * START BUTTON LOGIC
-     **********************/
-    startBtn.addEventListener("click", assignGroup);
+        /**********************
+         * SUPABASE SETUP
+         **********************/
+        const SUPABASE_URL = "https://nxpbqfrfyhsreyjnzwhn.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_6ZjnRYTbOSHeGmj1q5ffnA_GwGnU5jA";
 
-    async function assignGroup() {
-      // Prevent double clicks
-      startBtn.disabled = true;
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      // Prevent multiple participations on same device
-      const existingGroup = localStorage.getItem("group");
-      if (existingGroup) {
-        showDownloadButton(existingGroup);
-        return;
-      }
+        const localStorageVariable = "bachelor_shadow19_group";
 
-      // Fetch group assignments
-      const { data, error } = await supabaseClient
-        .from("participants")
-        .select("group_assignment");
+        /**********************
+         * START BUTTON LOGIC
+         **********************/
+        startBtn.addEventListener("click", assignGroup);
 
-      if (error) {
-        alert("Error fetching group data.");
-        console.error(error);
-        startBtn.disabled = false;
-        return;
-      }
+        async function assignGroup() {
+            // Prevent double clicks
+            startBtn.disabled = true;
 
-      // Count groups
-      const countA = data.filter(p => p.group_assignment === "A").length;
-      const countB = data.filter(p => p.group_assignment === "B").length;
+            // Prevent multiple participations on same device
+            const existingGroup = localStorage.getItem(localStorageVariable);
+            if (existingGroup) {
+                showDownloadButton(existingGroup);
+                return;
+            }
 
-      // Assign to smaller group
-      const group = countA <= countB ? "A" : "B";
+            // Fetch group assignments
+            const { data, error } = await supabaseClient.from("participants").select("group_assignment");
 
-      // Insert participant
-      const { error: insertError } = await supabaseClient
-        .from("participants")
-        .insert({ group_assignment: group });
+            if (error) {
+                //alert("Error fetching group data.");
+                showErrorMessage();
+                console.error(error);
+                //startBtn.disabled = false;
+                return;
+            }
 
-      if (insertError) {
-        alert("Error saving your assignment.");
-        console.error(insertError);
-        startBtn.disabled = false;
-        return;
-      }
+            // Count groups
+            const countA = data.filter(p => p.group_assignment === "A").length;
+            const countB = data.filter(p => p.group_assignment === "B").length;
 
-      // Store locally
-      localStorage.setItem("group", group);
+            // Assign to smaller group
+            const group = countA <= countB ? "A" : "B";
 
-      // Show download
-      showDownloadButton(group);
-    }
+            // Insert participant
+            const { error: insertError } = await supabaseClient.from("participants").insert({ group_assignment: group });
 
-    /**********************
-     * DOWNLOAD BUTTON
-     **********************/
-    function showDownloadButton(group) {
-      resultDiv.innerHTML = "<p>Have fun playing!</p>";
+            if (insertError) {
+                //alert("Error saving your assignment.");
+                showErrorMessage();
+                console.error(insertError);
+                //startBtn.disabled = false;
+                return;
+            }
 
-      const downloadBtn = document.createElement("a");
-      downloadBtn.className = "downloadBtn";
-      downloadBtn.textContent = "Download";
-      downloadBtn.download = "";
+            // Store locally
+            localStorage.setItem(localStorageVariable, group);
 
-      downloadBtn.href =
-        group === "A"
-          ? "files/BachelorThesisLiamHermann_1.7z"
-          : "files/BachelorThesis_LiamHermann_1.7z";
+            // Show download
+            showDownloadButton(group);
+        }
 
-      resultDiv.appendChild(downloadBtn);
-    }
-  </script>
+        /**********************
+         * DOWNLOAD BUTTON
+         **********************/
+        function showDownloadButton(group) {
+            resultDiv.innerHTML = "<p>Have fun playing!</p>";
+
+            const downloadBtn = document.createElement("a");
+            downloadBtn.className = "downloadBtn";
+            downloadBtn.textContent = "Download";
+            downloadBtn.download = "";
+
+            downloadBtn.href = group === "A" ? "files/BachelorThesisLiamHermann_1.7z" : "files/BachelorThesis_LiamHermann_1.7z";
+
+            resultDiv.appendChild(downloadBtn);
+        }
+
+
+        function showErrorMessage() {
+            resultDiv.innerHTML = "<div style='color: red;''><p>Something went wrong!</p><span>Please reload your browser.</span></div>";
+        }
+    </script>
 
 </body>
 </html>
