@@ -12,14 +12,46 @@
             font-family: Arial, sans-serif;
             font-size: 20px;
             text-align: center;
-            margin: 50px 200px;
         }
+
+        #container {
+            width: 100%;
+            display: flex;
+            flex-flow: column nowrap;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        h1 {
+            margin-bottom: 2rem;
+        }
+
+        #consentLabel {
+            border-radius: 0.5rem;
+            display: inline-block; /* enables shrink-to-fit */
+            width: fit-content; /* size based on content */
+            max-width: 100%; /* but never exceed parent width */
+            box-sizing: border-box; /* padding included in width calc */
+            margin-bottom: 1rem;
+            font-size: 16px;
+            padding: 0.5rem 2rem;
+        }
+
+            #consentLabel:has(#consentCheckbox:checked) {
+                border: 2px solid green;
+                background: rgb(230, 255, 230);
+            }
+
+            #consentLabel:has(#consentCheckbox:not(:checked)) {
+                border: 2px solid red;
+                background: rgb(255, 230, 230);
+            }
 
         button {
             padding: 12px 20px;
             font-size: 16px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-bottom: 1.5rem;
         }
 
             button:disabled {
@@ -27,15 +59,8 @@
                 cursor: not-allowed;
             }
 
-        #consentLabel {
-            display: block;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-
         a.downloadBtn {
             display: inline-block;
-            margin-top: 20px;
             padding: 12px 20px;
             background-color: #28a745;
             color: white;
@@ -47,34 +72,54 @@
             a.downloadBtn:hover {
                 background-color: #218838;
             }
+
+        #result {
+            display: none;
+            background: rgb(240, 240, 240);
+            border-radius: 0.5rem;
+            padding: 1rem 4rem;
+            flex-flow: column nowrap;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        #error {
+            color: red;
+        }
     </style>
 </head>
 
 <body onLoad="Start();">
+    <div id="container">
+        <h1>Bachelor Thesis Evaluation</h1>
 
-    <h1>Bachelor Thesis Evaluation</h1>
+        <p>
+            Hi, my name is Liam!<br />
+            I am currently writing my bachelor thesis in the study course Animation & Game<br />
+            at the <a href="https://h-da.de/">University of Applied Sciences Darmstadt</a>.<br />
+        </p>
 
-    <p>
-        Hi, my name is Liam! I am currently writing my bachelor thesis in the study course
-        Animation & Game at the <a href="https://h-da.de/">University of Applied Sciences Darmstadt</a>.
-        Thank you for helping out!
-    </p>
+        <p>
+            Thank you for helping out!
+        </p>
 
-    <p>
-        The total gameplay time is around 5 to 7 minutes, followed by a questionnaire.
-        Please give consent and click the button to start testing!
-    </p>
+        <p>
+            The total gameplay time is around <b>5 to 7 minutes</b>, followed by a questionnaire.<br />
+            Please give consent and click the button to start testing!
+        </p>
 
-    <!-- Consent -->
-    <input type="checkbox" id="consentCheckbox">
-    <label id="consentLabel" for="consentCheckbox">
-        I consent to participate in this study and understand my data will be used anonymously for research purposes.
-    </label>
+        <!-- Consent -->
+        <label id="consentLabel" for="consentCheckbox">
+            <input type="checkbox" id="consentCheckbox">
+            <p>I consent to participate in this study and understand my data will be used anonymously for research purposes.</p>
+        </label>
 
-    <!-- Start Button -->
-    <button id="startBtn" disabled>Get me testing!</button>
+        <!-- Start Button -->
+        <button id="startBtn" disabled>Get me testing!</button>
 
-    <div id="result" style="margin-top: 20px;"></div>
+        <div id="result"></div>
+    </div>
 
     <script>
         /**********************
@@ -85,6 +130,8 @@
         const resultDiv = document.getElementById("result");
 
         function Start() {
+            if (downloadPossible)
+                return;
             startBtn.disabled = !consentCheckbox.checked;
         }
 
@@ -92,6 +139,8 @@
          * CONSENT HANDLING
          **********************/
         consentCheckbox.addEventListener("change", () => {
+            if (downloadPossible)
+                return;
             startBtn.disabled = !consentCheckbox.checked;
         });
 
@@ -105,6 +154,13 @@
 
         const localStorageVariable = "bachelor_shadow19_group";
 
+        const downloadBtn = document.createElement("a");
+        downloadBtn.className = "downloadBtn";
+        downloadBtn.textContent = "Download Game";
+        downloadBtn.download = "";
+
+        var downloadPossible = false;
+
         /**********************
          * START BUTTON LOGIC
          **********************/
@@ -113,6 +169,8 @@
         async function assignGroup() {
             // Prevent double clicks
             startBtn.disabled = true;
+            consentCheckbox.addEventListener("click", e => e.preventDefault());  // prevent the checkbox from being clicked after assigning
+            downloadPossible = true;
 
             // Prevent multiple participations on same device
             const existingGroup = localStorage.getItem(localStorageVariable);
@@ -161,21 +219,18 @@
          * DOWNLOAD BUTTON
          **********************/
         function showDownloadButton(group) {
-            resultDiv.innerHTML = "<p>Have fun playing!</p>";
-
-            const downloadBtn = document.createElement("a");
-            downloadBtn.className = "downloadBtn";
-            downloadBtn.textContent = "Download";
-            downloadBtn.download = "";
+            resultDiv.innerHTML = "<span>Have fun playing!</span>";
 
             downloadBtn.href = group === "A" ? "files/BachelorThesisLiamHermann_1.7z" : "files/BachelorThesis_LiamHermann_1.7z";
 
             resultDiv.appendChild(downloadBtn);
+            resultDiv.style.display = "flex";
         }
 
 
         function showErrorMessage() {
-            resultDiv.innerHTML = "<div style='color: red;''><p>Something went wrong!</p><span>Please reload your browser.</span></div>";
+            resultDiv.innerHTML = "<div id='error'><h3>Something went wrong!</h3><p>Please reload your browser.</p></div>";
+            resultDiv.style.display = "flex";
         }
     </script>
 
